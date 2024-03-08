@@ -3,10 +3,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/vendor/autoload.php';
+require_once __DIR__ . '/src/Exception/exception.php';
 
-$application = new \App\Helpers\App();
-echo $application->getEnvironment() . PHP_EOL;
-echo $application->getServerTime()->format('d-m-Y') . PHP_EOL;
-echo $application->getLogPath() . PHP_EOL;
-echo $application->isDebugMode() . PHP_EOL;
-echo $application->isExecutedFromCommandLine() ? '1' : '0' . PHP_EOL;
+$logger = new \App\Logger\Logger();
+$logger->log(\App\Logger\LogLevel::INFO, 'Example information');

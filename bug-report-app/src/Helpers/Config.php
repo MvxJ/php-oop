@@ -27,7 +27,8 @@ class Config
             file_exists($path) ? $fileContent = require $path : [];
         } catch (\Throwable $exception) {
             throw new NotFoundException(
-                sprintf('The specified file %s was no found', $fileName)
+                sprintf('The specified file %s was no found', $fileName),
+                ['not found file', 'data is passed']
             );
         }
 
