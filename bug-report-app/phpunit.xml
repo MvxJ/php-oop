@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<phpunit
+        bootstrap="vendor/autoload.php"
+        testdox="true"
+        colors="true"
+>
+    <testsuites>
+        <testsuite name="Unit">
+            <directory>tests/unit</directory>
+        </testsuite>
+        <testsuite name="Functional">
+            <directory>tests/functional</directory>
+        </testsuite>
+    </testsuites>
+
+    <php>
+        <const name="PHPUNIT_RUNNING" value="true" />
+    </php>
+</phpunit>
