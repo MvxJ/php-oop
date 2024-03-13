@@ -13,7 +13,6 @@ class ExceptionHandler
         $application = new App();
 
         if ($application->isDebugMode()) {
-            var_dump($exception);
         } else {
             echo 'Something went wrong. Please try again later.';
         }

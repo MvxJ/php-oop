@@ -23,7 +23,7 @@ class DbQueryBuilderFactory
                 $connection = (new PDOConnection($credentials))->connect();
                 return new PDOQueryBuilder($connection);
                 break;
-            case 'mydqli':
+            case 'mysqli':
                 $connection = (new MySQLiConnection($credentials))->connect();
                 return new MySQLiQueryBuilder($connection);
                 break;

@@ -34,10 +34,25 @@ abstract class QueryBuilder
     abstract public function prepare($query);
     abstract public function execute($statement);
     abstract public function fetchInfo($className);
+    abstract public function beginTransaction();
+    abstract public function affected();
 
     public function __construct($databaseConnection)
     {
         $this->connection = $databaseConnection->getConnection();
+    }
+
+    public function rollback(): void
+    {
+        $this->connection->rollback();
+    }
+
+    public function runQuery(): self
+    {
+        $query = $this->prepare($this->getQuery($this->operation));
+        $this->statement = $this->execute($query);
+
+        return $this;
     }
 
     public function table(string $tableName): self
@@ -52,20 +67,18 @@ abstract class QueryBuilder
         string $operator = self::OPERATORS[0],
         $value = null
     ): self {
-        if (!in_array($operator, self::OPERATORS) && !$value) {
-            $value = $operator;
-            $operator = self::OPERATORS[0];
-        } else {
-            throw new InvalidArgumentException(
-                'Operators is not valid',
-                ['operator' => $operator]
-            );
+        if(!in_array($operator, self::OPERATORS)){
+            if($value === null){
+                $value = $operator;
+                $operator = self::OPERATORS[0];
+            }else{
+                throw new InvalidArgumentException('Operator is not valid', ['operator' => $operator]);
+            }
         }
 
         $this->passWhere([$column => $value], $operator);
-        $query = $this->prepare($this->getQuery($this->operation));
-        var_dump($query);
-        $this->statement = $this->execute($query);
+
+
 
         return $this;
     }
@@ -99,7 +112,7 @@ abstract class QueryBuilder
 
         foreach ($data as $value) {
             $this->placeholders[] = self::PLACEHOLDER;
-            $this->bindings = $value;
+            $this->bindings[] = $value;
         }
 
         $query = $this->prepare($this->getQuery(self::DML_TYPE_INSERT));
@@ -122,7 +135,7 @@ abstract class QueryBuilder
 
     public function delete(): self
     {
-        $this->operation = self::DML_TYPE_UPDATE;
+        $this->operation = self::DML_TYPE_DELETE;
 
         return $this;
     }
@@ -137,12 +150,12 @@ abstract class QueryBuilder
 
     public function find($id)
     {
-        return $this->where('id', $id)->first();
+        return $this->where('id', '=', $id)->runQuery()->first();
     }
 
     public function findOneBy(string $field, $value)
     {
-        return $this->where($field, $value)->first();
+        return $this->where($field, '=', $value)->runQuery()->first();
     }
 
     public function first()

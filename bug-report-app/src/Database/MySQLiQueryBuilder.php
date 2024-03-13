@@ -14,12 +14,32 @@ class MySQLiQueryBuilder extends QueryBuilder
     private $resultSet;
     private $results;
 
+    public function beginTransaction(): void
+    {
+        $this->connection->begin_transaction();
+    }
+
+    public function affected(): int
+    {
+        $this->statement->store_result();
+
+        return $this->statement->affected_rows;
+    }
+
     public function get()
     {
+        $results = [];
+
         if (!$this->resultSet) {
             $this->resultSet = $this->statement->get_result();
-            $this->results = $this->resultSet->fetchAll(MYSQLI_ASSOC);
+            if ($this->resultSet) {
+                while ($object = $this->resultSet->fetch_object()) {
+                    $results[] = $object;
+                }
+            }
         }
+
+        $this->results = $results;
 
         return $this->results;
     }
@@ -40,7 +60,7 @@ class MySQLiQueryBuilder extends QueryBuilder
 
     public function prepare($query)
     {
-        return $this->connection->preapre($query);
+        return $this->connection->prepare($query);
     }
 
     public function execute($statement)
@@ -62,7 +82,7 @@ class MySQLiQueryBuilder extends QueryBuilder
         $this->bindings = [];
         $this->placeholders = [];
 
-        return $this->statement;
+        return $statement;
     }
 
     public function fetchInfo($className)
@@ -101,11 +121,16 @@ class MySQLiQueryBuilder extends QueryBuilder
         $bindingTypes = [];
 
         foreach ($this->bindings as $binding) {
-            $bindingTypes[] = match ($binding) {
-                is_int($binding) => self::PARAM_TYPE_INT,
-                is_string($binding) => self::PARAM_TYPE_STRING,
-                is_double($binding) => self::PARAM_TYPE_DOUBLE
-            };
+            if(is_int($binding)){
+                $bindingTypes[] = self::PARAM_TYPE_INT;
+            }
+            if(is_string($binding)){
+                $bindingTypes[] = self::PARAM_TYPE_STRING;
+            }
+
+            if(is_float($binding)){
+                $bindingTypes[] = self::PARAM_TYPE_DOUBLE;
+            }
         }
 
         return implode('', $bindingTypes);

@@ -8,6 +8,16 @@ use PDO;
 
 class PDOQueryBuilder extends QueryBuilder
 {
+    public function beginTransaction(): void
+    {
+        $this->connection->beginTransaction();
+    }
+
+    public function affected(): int
+    {
+        return $this->count();
+    }
+
     public function get()
     {
         return $this->statement->fetchAll();

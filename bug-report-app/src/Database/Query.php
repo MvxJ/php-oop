@@ -11,7 +11,7 @@ trait Query
     {
         $query = match ($type) {
             self::DML_TYPE_SELECT => sprintf(
-                'SELECT %s FROM $s WHERE %s',
+                'SELECT %s FROM %s WHERE %s',
                 $this->fields,
                 $this->table,
                 implode(' AND ', $this->placeholders)
@@ -28,7 +28,7 @@ trait Query
                 implode(', ', $this->fields),
                 implode(' AND ', $this->placeholders)
             ),
-            self::DML_TYPE_DELETE => printf(
+            self::DML_TYPE_DELETE => sprintf(
                 'DELETE FROM %s WHERE (%s)',
                 $this->table,
                 implode(' AND ', $this->placeholders)
