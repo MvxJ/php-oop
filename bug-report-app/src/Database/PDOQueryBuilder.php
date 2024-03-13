@@ -47,7 +47,7 @@ class PDOQueryBuilder extends QueryBuilder
         return $statement;
     }
 
-    public function fetchInfo($className)
+    public function fetchInto($className)
     {
         return $this->statement->fetchAll(PDO::FETCH_CLASS, $className);
     }

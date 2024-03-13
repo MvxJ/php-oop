@@ -1,9 +1,10 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace App\Database;
 
 use App\Exception\MissingArgumentException;
-use ReflectionClass;
 
 class MySQLiQueryBuilder extends QueryBuilder
 {
@@ -13,18 +14,6 @@ class MySQLiQueryBuilder extends QueryBuilder
 
     private $resultSet;
     private $results;
-
-    public function beginTransaction(): void
-    {
-        $this->connection->begin_transaction();
-    }
-
-    public function affected(): int
-    {
-        $this->statement->store_result();
-
-        return $this->statement->affected_rows;
-    }
 
     public function get()
     {
@@ -36,6 +25,7 @@ class MySQLiQueryBuilder extends QueryBuilder
                 while ($object = $this->resultSet->fetch_object()) {
                     $results[] = $object;
                 }
+                $this->results = $results;
             }
         }
 
@@ -49,7 +39,6 @@ class MySQLiQueryBuilder extends QueryBuilder
         if (!$this->resultSet) {
             $this->get();
         }
-
         return $this->resultSet ? $this->resultSet->num_rows : 0;
     }
 
@@ -73,7 +62,7 @@ class MySQLiQueryBuilder extends QueryBuilder
 
         if ($this->bindings) {
            $bindings = $this->parseBindings($this->bindings);
-           $reflectionObj = new ReflectionClass('mysqli_stmt');
+           $reflectionObj = new \ReflectionClass('mysqli_stmt');
            $method = $reflectionObj->getMethod('bind_param');
            $method->invokeArgs($statement, $bindings);
         }
@@ -85,18 +74,6 @@ class MySQLiQueryBuilder extends QueryBuilder
         return $statement;
     }
 
-    public function fetchInfo($className)
-    {
-        $results = [];
-        $this->resultSet = $this->statement->get_result();
-
-        while ($object = $this->resultSet->fetch_object($className)) {
-            $results[] = $object;
-        }
-
-        return $this->results = $results;
-    }
-
     private function parseBindings(array $params)
     {
         $bindings = [];
@@ -106,17 +83,16 @@ class MySQLiQueryBuilder extends QueryBuilder
             return $this->bindings;
         }
 
-        $bindingTypes = $this->parseBindingType();
+        $bindingTypes = $this->parseBindingTypes();
         $bindings[] = & $bindingTypes;
 
         for ($index = 0; $index < $count; $index++) {
             $bindings[] = & $params[$index];
         }
-
         return $bindings;
     }
 
-    private function parseBindingType(): string
+    public function parseBindingTypes(): string
     {
         $bindingTypes = [];
 
@@ -132,7 +108,29 @@ class MySQLiQueryBuilder extends QueryBuilder
                 $bindingTypes[] = self::PARAM_TYPE_DOUBLE;
             }
         }
-
         return implode('', $bindingTypes);
+    }
+
+    public function fetchInto($className)
+    {
+        $results = [];
+        $this->resultSet = $this->statement->get_result();
+        while($object = $this->resultSet->fetch_object($className)){
+            $results[] = $object;
+        }
+
+        return $this->results = $results;
+    }
+
+    public function beginTransaction()
+    {
+        $this->connection->begin_transaction();
+    }
+
+    public function affected()
+    {
+        $this->statement->store_result();
+
+        return $this->statement->affected_rows;
     }
 }
