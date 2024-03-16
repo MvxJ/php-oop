@@ -3,7 +3,9 @@
 namespace Tests\Unit;
 
 use App\Database\QueryBuilder;
+use App\Entity\BugReport;
 use App\Helpers\DbQueryBuilderFactory;
+use App\Repository\BugReportRepository;
 use PHPUnit\Framework\TestCase;
 
 class RepositoryTest extends TestCase
@@ -33,7 +35,7 @@ class RepositoryTest extends TestCase
 
         self::assertInstanceOf(BugReport::class, $newBugReport);
         self::assertNotNull($newBugReport->getId());
-        self::assertEquals('Type 2', $newBugReport->getType());
+        self::assertEquals('Type 2', $newBugReport->getReportType());
         self::assertEquals('https://example.com', $newBugReport->getLink());
         self::assertEquals('This is example message', $newBugReport->getMessage());
         self::assertEquals('example@example.com', $newBugReport->getEmail());
@@ -49,7 +51,7 @@ class RepositoryTest extends TestCase
 
         self::assertEquals('Updated message', $updatedBugReport->getMessage());
         self::assertEquals('new@example.com', $updatedBugReport->getEmail());
-        self::assertEquals('Type 2', $updatedBugReport->getType());
+        self::assertEquals('Type 2', $updatedBugReport->getReportType());
         self::assertEquals('https://example.com', $updatedBugReport->getLink());
     }
 
@@ -70,6 +72,25 @@ class RepositoryTest extends TestCase
         $foundBugReport = $this->bugReportRepository->find($newBugReport->getId());
 
         self::assertNull($foundBugReport);
+    }
+
+    public function testItCanFindByCriteria(): void
+    {
+        $report = $this->createBugReportEntity();
+        $results = $this->bugReportRepository->findBy(
+            [
+                'report_type' => 'Type 2',
+                'email' => 'example@example.com'
+            ]
+        );
+
+        self::assertIsArray($results);
+        self::assertNotNull($results);
+
+        /** @var BugReport $bugReport */
+        $bugReport = $results[0];
+
+        self::assertSame($report->getReportType(), $bugReport->getReportType());
     }
 
     private function createBugReportEntity(): BugReport

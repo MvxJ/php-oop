@@ -106,7 +106,7 @@ abstract class QueryBuilder
         return $this;
     }
 
-    public function create(array $data)
+    public function create(array $data): int
     {
         $this->fields = '`' . implode('`, `', array_keys($data)) . '`';
 
@@ -118,7 +118,7 @@ abstract class QueryBuilder
         $query = $this->prepare($this->getQuery(self::DML_TYPE_INSERT));
         $this->statement = $this->execute($query);
 
-        return $this->lastInsertedId();
+        return (int)$this->lastInsertedId();
     }
 
     public function update(array $data): self

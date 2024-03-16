@@ -18,12 +18,12 @@ class QueryBuilderTest extends TestCase
     public function setUp(): void
     {
         $credentials = array_merge(
-            Config::get('database', 'mysqli'),
+            Config::get('database', 'pdo'),
             ['db_name' => 'bug_app_test']
         );
         $this->queryBuilder = DbQueryBuilderFactory::make(
             'database',
-            'mysqli',
+            'pdo',
             ['db_name' => 'bug_app_test']
         );
         $this->queryBuilder->beginTransaction();
@@ -56,7 +56,7 @@ class QueryBuilderTest extends TestCase
         $result = $this->queryBuilder
             ->table('reports')
             ->select('*')
-            ->where('id', $id)
+            ->where('id', '=', $id)
             ->runQuery()
             ->first();
 
