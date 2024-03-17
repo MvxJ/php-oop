@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Helpers;
 
 use App\Database\MySQLiConnection;
@@ -33,5 +35,16 @@ class DbQueryBuilderFactory
                 );
                 break;
         }
+    }
+
+    public static function get(): QueryBuilder
+    {
+        $app = new App;
+
+        if ($app->isTestMode() || $app->getEnvironment() === 'test') {
+            return self::make('database', 'pdo', ['db_name' => 'bug_app_test']);
+        }
+
+        return self::make();
     }
 }

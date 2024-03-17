@@ -37,21 +37,18 @@ abstract class Repository implements RepositoryInterface
 
     public function findBy(array $criteria): array
     {
-        $this->queryBuilder->table(static::$table);
+        $this->queryBuilder->table(static::$table)->select('*');
 
         foreach ($criteria as $field => $value) {
-            var_dump($field, $value);
             $this->queryBuilder->where($field, '=', $value);
         }
 
         return $this->queryBuilder->runQuery()->fetchInto(static::$className);
     }
 
-    public function findAll(): array
+    public function findAll()
     {
-        return $this->queryBuilder->table(static::$table)
-            ->select()
-            ->runQuery()
+        return $this->queryBuilder->raw('SELECT * FROM reports')
             ->fetchInto(static::$className);
     }
 
